@@ -11,14 +11,16 @@ results_dir = 'log'                             # 文件夹名称
 url_file = 'url.txt'                            # url列表文件
 platform_file = 'platform.txt'                  # 平台列表文件,url所属平台/系统
 url_list = []                                   # url测试列表
-platform_flag = True                            # 平台文件存在标志
 platform_list = []                              # 平台列表
 
 
 # 初始化
 def init():
+    if os.path.exists(platform_file):
+        encode_file(platform_file)
+    else:
+        pass
     encode_file(url_file)
-    encode_file(platform_file)
     global url_list
     global platform_list
     url_list = linecache.getlines(url_file)                     # url测试列表
@@ -36,7 +38,7 @@ def makedir(dir_name):
 # 打印log
 def log(log_file, string):
     with open(log_file, 'a', encoding='utf-8') as log_f:
-        log_f.write('[{}] {}\n'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), string))
+        log_f.write('[{}]\t{}\n'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), string))
 
 
 # 将文件编码改为utf-8
@@ -99,9 +101,12 @@ def url_test():
                     print(e)
                     code = '超时'
             if platform_list[counter] and platform_list[counter] != '\n':
-                print(platform_list[counter], url, code)
-                # 日志记录平台、url、code
-                log(log_file, platform_list[counter].strip() + '\t' + url + '\t' + str(code))
+                platform = platform_list[counter].strip()
+            else:
+                platform = ''
+            print(platform, url, code)
+            # 日志记录平台、url、code
+            log(log_file, platform + '\t' + url + '\t' + str(code))
 
     log(log_file, "url_test end")
     print("url_test end")
@@ -111,6 +116,6 @@ if __name__ == '__main__':
     init()                  # 初始化
     makedir(results_dir)    # 创建结果文件夹,同时切换工作目录
     scheduler = BlockingScheduler()
-    scheduler.add_job(url_test, 'cron', day_of_week='*', hour='*', minute='*')
+    scheduler.add_job(url_test, 'cron', day_of_week='*', hour='*', minute='*', second='*')
     print(scheduler.get_jobs())
     scheduler.start()
